@@ -1,0 +1,89 @@
+version: 2.1
+
+executors:
+  cpp-executor:
+    machine:
+      image: ubuntu-2204:current  # Use a machine executor with Docker support
+    working_directory: ~/tech-template
+
+jobs:
+  build-and-test:
+    executor: cpp-executor
+    steps:
+      - checkout
+
+      # Restore vcpkg cache
+      - restore_cache:
+          keys:
+            - vcpkg-modules-v1-{{ checksum "vcpkg.json" }}
+            - vcpkg-modules-v1-
+
+      - run:
+          name: Install System Dependencies
+          command: |
+            sudo apt-get update
+            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y cmake clang clang-tidy lcov ninja-build pkg-config llvm doxygen graphviz
+
+      - run:
+          name: Setup vcpkg
+          command: |
+            if [ ! -d "vcpkg" ]; then
+              git submodule add https://github.com/microsoft/vcpkg.git
+            fi
+            git submodule update --init --recursive
+
+      - run:
+          name: Bootstrap vcpkg
+          command: |
+            ./vcpkg/bootstrap-vcpkg.sh
+
+      - run:
+          name: Install vcpkg Dependencies
+          command: |
+            ./vcpkg/vcpkg install --triplet=x64-linux
+      - run:
+          name: Configure Project
+          command: |
+            cmake -B build -S . \
+              -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
+              -DCMAKE_CXX_COMPILER=clang++ \
+              -DENABLE_COVERAGE=ON \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -G Ninja
+      - run:
+          name: Build Project
+          command: |
+            mkdir -p build/test_results
+            cd build
+            ninja
+
+      - run:
+          name: Run Unit Tests and Store Results
+          command: |
+            cd build
+            ctest --output-on-failure --test-output-size-passed | tee test_results/ctest_output.log
+            ctest --test-output-size-passed --gtest_output=xml:test_results/gtest_results.xml || echo "No GTest XML output found."
+
+      - run:
+          name: Generate Coverage Report
+          command: |
+            cd build
+            ../scripts/generate_coverage.sh
+
+      - store_artifacts:
+          path: build/coverage_html
+          destination: coverage-report
+
+      # Save vcpkg cache
+      - save_cache:
+          key: vcpkg-modules-v1-{{ checksum "vcpkg.json" }}
+          paths:
+            - ~/.cache/vcpkg/archives
+            - ./vcpkg/installed
+
+workflows:
+  version: 2
+  build-test-analyze:
+    jobs:
+      - build-and-test
