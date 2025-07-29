@@ -20,7 +20,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang-tidy build-essential ninja-build cmake python3-dev
+        sudo apt-get install -y clang-tidy build-essential ninja-build cmake python3-dev \
+          autoconf automake libtool pkg-config
 
     - name: Bootstrap vcpkg
       run: ./vcpkg/bootstrap-vcpkg.sh

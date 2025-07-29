@@ -10,7 +10,7 @@ namespace ab::logger {
  * @brief Records and retrieves log messages.
  */
 class Logger {
-public:
+ public:
   /**
    * @brief Logs an operation message.
    * @param operation A C-string describing the operation.
@@ -23,7 +23,7 @@ public:
    */
   [[nodiscard]] const std::vector<std::string> &getLogs() const;
 
-private:
+ private:
   std::vector<std::string> logs_;
 };
 

@@ -1,5 +1,15 @@
+/**
+ * @file py_Calculator.cpp
+ * @brief Python bindings for the Calculator class using nanobind.
+ *
+ * This file contains the nanobind module definition that exposes the
+ * Calculator C++ class to Python, providing a clean Python interface
+ * for calculator operations with exception handling.
+ */
+
 #include <ab/calculator/Calculator.h>
 #include <nanobind/nanobind.h>
+
 #include <stdexcept>
 
 namespace nb = nanobind;

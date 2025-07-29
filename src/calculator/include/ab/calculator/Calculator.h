@@ -12,7 +12,7 @@ namespace ab::calculator {
  * which provides compilation firewall and ABI stability.
  */
 class Calculator {
-public:
+ public:
   /**
    * @brief Default constructor.
    */
@@ -56,7 +56,7 @@ public:
    */
   [[nodiscard]] int divide(int lhs, int rhs) const;
 
-private:
+ private:
   struct Impl;
   std::unique_ptr<Impl> pimpl_;
 };

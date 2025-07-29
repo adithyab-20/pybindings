@@ -7,7 +7,7 @@ namespace ab::notifier {
  * exceeded.
  */
 class Notifier {
-public:
+ public:
   /**
    * @brief Constructs a Notifier with a specified threshold.
    * @param thresh The threshold value for triggering notifications.
@@ -27,7 +27,7 @@ public:
    */
   [[nodiscard]] bool wasNotified() const;
 
-private:
+ private:
   int threshold;
   bool notified{false};
 };

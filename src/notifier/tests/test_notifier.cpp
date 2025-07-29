@@ -1,5 +1,4 @@
 #include <ab/notifier/Notifier.h>
-
 #include <gtest/gtest.h>
 
 TEST(NotifierTest, CheckNotifications) {

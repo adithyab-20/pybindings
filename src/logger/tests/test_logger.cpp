@@ -1,5 +1,4 @@
 #include <ab/logger/Logger.h>
-
 #include <gtest/gtest.h>
 
 #include <string>
