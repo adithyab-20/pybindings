@@ -43,6 +43,38 @@ add_subdirectory(src/calculator)
 add_subdirectory(src/logger)
 add_subdirectory(src/notifier)
 
+# Python bindings (only if Python is found)
+find_package(Python COMPONENTS Interpreter Development QUIET)
+if(Python_FOUND)
+    find_package(nanobind CONFIG QUIET)
+    if(nanobind_FOUND)
+        message(STATUS "Python and nanobind found - building Python bindings")
+        
+        # Create the Python extension
+        nanobind_add_module(ab_calculator
+            src/calculator/py_Calculator.cpp
+        )
+        
+        target_link_libraries(ab_calculator PRIVATE
+            calculator
+        )
+        
+        # Install the extension to the Python package directory
+        install(TARGETS ab_calculator LIBRARY DESTINATION ab_py_calculator COMPONENT python)
+        
+        # Install Python package files
+        install(FILES 
+            ab_py_calculator/__init__.py
+            ab_py_calculator/py.typed
+            ab_py_calculator/ab_calculator.pyi
+            DESTINATION ab_py_calculator COMPONENT python)
+    else()
+        message(STATUS "nanobind not found - skipping Python bindings")
+    endif()
+else()
+    message(STATUS "Python not found - skipping Python bindings")
+endif()
+
 # Main executable using main.cpp.
 add_executable(ab_modules main.cpp)
 target_link_libraries(ab_modules

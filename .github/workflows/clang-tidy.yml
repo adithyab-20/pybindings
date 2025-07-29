@@ -1,5 +1,5 @@
 # .github/workflows/clang-tidy.yml
-name: Clang-Tidy Check
+name: Clang-Tidy
 
 on:
   push:
@@ -9,10 +9,10 @@ on:
 
 jobs:
   clang-tidy:
-    name: Clang-Tidy Check
+    name: C++ Static Analysis
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
         fetch-depth: 0
@@ -20,20 +20,22 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang-tidy build-essential ninja-build doxygen graphviz cmake
+        sudo apt-get install -y clang-tidy build-essential ninja-build cmake
 
     - name: Bootstrap vcpkg
-      run: |
-        ./vcpkg/bootstrap-vcpkg.sh
+      run: ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Install vcpkg dependencies
-      run: |
-        ./vcpkg/vcpkg install
+      run: ./vcpkg/vcpkg install
 
-    - name: Create Compilation Database
+    - name: Configure project
       run: |
-        cmake -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+        cmake -B build -G Ninja \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DCMAKE_CXX_COMPILER=clang++
 
     - name: Run Clang-Tidy
       run: |
-        find . -not -path "./vcpkg/*" \( -name '*.cpp' -o -name '*.hpp' \) | xargs clang-tidy -p build
+        find src -name '*.cpp' -o -name '*.hpp' | \
+        xargs clang-tidy -p build --warnings-as-errors='*'

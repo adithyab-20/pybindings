@@ -1,18 +1,17 @@
 version: 2.1
 
 executors:
-  cpp-executor:
+  cpp-python-executor:
     machine:
-      image: ubuntu-2204:current  # Use a machine executor with Docker support
-    working_directory: ~/tech-template
+      image: ubuntu-2204:current
+    working_directory: ~/pybindings
 
 jobs:
   build-and-test:
-    executor: cpp-executor
+    executor: cpp-python-executor
     steps:
       - checkout
 
-      # Restore vcpkg cache
       - restore_cache:
           keys:
             - vcpkg-modules-v1-{{ checksum "vcpkg.json" }}
@@ -22,60 +21,80 @@ jobs:
           name: Install System Dependencies
           command: |
             sudo apt-get update
-            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y cmake clang clang-tidy lcov ninja-build pkg-config llvm doxygen graphviz
+            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
+              cmake clang clang-tidy ninja-build pkg-config llvm \
+              python3.12 python3.12-dev python3.12-venv
+
+      - run:
+          name: Install uv
+          command: |
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> $BASH_ENV
 
       - run:
           name: Setup vcpkg
           command: |
-            if [ ! -d "vcpkg" ]; then
-              git submodule add https://github.com/microsoft/vcpkg.git
-            fi
             git submodule update --init --recursive
 
       - run:
           name: Bootstrap vcpkg
-          command: |
-            ./vcpkg/bootstrap-vcpkg.sh
+          command: ./vcpkg/bootstrap-vcpkg.sh
 
       - run:
           name: Install vcpkg Dependencies
-          command: |
-            ./vcpkg/vcpkg install --triplet=x64-linux
+          command: ./vcpkg/vcpkg install --triplet=x64-linux
+
       - run:
-          name: Configure Project
+          name: Configure C++ Project
           command: |
             cmake -B build -S . \
               -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_CXX_COMPILER=clang++ \
-              -DENABLE_COVERAGE=ON \
-              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
               -G Ninja
-      - run:
-          name: Build Project
-          command: |
-            mkdir -p build/test_results
-            cd build
-            ninja
 
       - run:
-          name: Run Unit Tests and Store Results
+          name: Build C++ Project
+          command: |
+            mkdir -p build/test_results
+            cmake --build build
+
+      - run:
+          name: Run C++ Tests
           command: |
             cd build
             ctest --output-on-failure --test-output-size-passed | tee test_results/ctest_output.log
-            ctest --test-output-size-passed --gtest_output=xml:test_results/gtest_results.xml || echo "No GTest XML output found."
 
       - run:
-          name: Generate Coverage Report
+          name: Install Python Package
           command: |
-            cd build
-            ../scripts/generate_coverage.sh
+            source $HOME/.cargo/env
+            cd ab_py_calculator
+            uv pip install -e ".[dev]"
+
+      - run:
+          name: Run Python Tests
+          command: |
+            source $HOME/.cargo/env
+            cd ab_py_calculator
+            uv run pytest tests/ -v --junitxml=../build/test_results/pytest.xml
+
+      - run:
+          name: Python Code Quality
+          command: |
+            source $HOME/.cargo/env
+            cd ab_py_calculator
+            uv run ruff check .
+            uv run mypy .
+
+      - store_test_results:
+          path: build/test_results
 
       - store_artifacts:
-          path: build/coverage_html
-          destination: coverage-report
+          path: build/test_results
+          destination: test-results
 
-      # Save vcpkg cache
       - save_cache:
           key: vcpkg-modules-v1-{{ checksum "vcpkg.json" }}
           paths:
