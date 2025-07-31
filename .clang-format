@@ -15,7 +15,7 @@ BreakBeforeBraces: Attach
 SpacesBeforeTrailingComments: 1
 MaxEmptyLinesToKeep: 1
 
-# Configure include sorting (Google Style)
+# Include sorting configuration
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
@@ -33,3 +33,4 @@ IncludeCategories:
   - Regex: "^\".*\"$"
     Priority: 5
 IncludeIsMainRegex: "([-_](test|unittest))?$"
+---
