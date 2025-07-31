@@ -33,4 +33,3 @@ IncludeCategories:
   - Regex: "^\".*\"$"
     Priority: 5
 IncludeIsMainRegex: "([-_](test|unittest))?$"
----
