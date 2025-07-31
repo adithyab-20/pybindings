@@ -1,14 +1,14 @@
-#include <ab/logger/Logger.h>
-#include <ab/notifier/Notifier.h>
-
-#include <gtest/gtest.h>
-
 #include <string>
 #include <vector>
 
+#include <gtest/gtest.h>
+
+#include "ab/logger/Logger.h"
+#include "ab/notifier/Notifier.h"
+
 // A simple mock calculator that always returns a fixed result.
 class MockCalculator {
-public:
+ public:
   static int add(int /*a*/, int /*b*/) {
     return 4; // Always returns 4
   }

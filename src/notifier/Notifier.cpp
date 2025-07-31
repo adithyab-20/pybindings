@@ -7,7 +7,7 @@
  * results and triggers notifications when specified thresholds are exceeded.
  */
 
-#include <ab/notifier/Notifier.h>
+#include "ab/notifier/Notifier.h"
 
 namespace ab::notifier {
 

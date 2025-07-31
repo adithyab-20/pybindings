@@ -7,11 +7,11 @@
  * conditions using Google Test framework.
  */
 
-#include <ab/calculator/Calculator.h>
+#include <stdexcept>
+
 #include <gtest/gtest.h>
 
-#include <stdexcept>
-#include <string>
+#include "ab/calculator/Calculator.h"
 
 TEST(CalculatorTest, BasicOperations) {
   const ab::calculator::Calculator calc;

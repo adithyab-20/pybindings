@@ -27,7 +27,9 @@ jobs:
       run: ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Install vcpkg dependencies
-      run: ./vcpkg/vcpkg install --triplet=x64-linux
+      run: |
+        export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
+        ./vcpkg/vcpkg install --triplet=x64-linux
 
     - name: Configure project
       run: |

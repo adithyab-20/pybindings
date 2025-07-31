@@ -1,8 +1,9 @@
-#include <ab/logger/Logger.h>
-#include <gtest/gtest.h>
-
 #include <string>
 #include <vector>
+
+#include <gtest/gtest.h>
+
+#include "ab/logger/Logger.h"
 
 TEST(LoggerTest, LogOperations) {
   ab::logger::Logger logger;

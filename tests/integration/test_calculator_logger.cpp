@@ -1,13 +1,13 @@
-#include <ab/calculator/Calculator.h>
-#include <ab/logger/Logger.h>
-
-#include <gtest/gtest.h>
-
 #include <string>
 #include <vector>
 
+#include <gtest/gtest.h>
+
+#include "ab/calculator/Calculator.h"
+#include "ab/logger/Logger.h"
+
 class MockNotifier {
-public:
+ public:
   bool notified = false;
 
   // For this test, if result > 10, the notifier should trigger.

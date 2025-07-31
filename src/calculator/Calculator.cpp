@@ -7,7 +7,7 @@
  * idiom for compilation firewall and ABI stability.
  */
 
-#include <ab/calculator/Calculator.h>
+#include "ab/calculator/Calculator.h"
 
 #include <memory>
 #include <stdexcept>

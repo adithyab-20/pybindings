@@ -14,4 +14,22 @@ AllowShortLoopsOnASingleLine: true
 BreakBeforeBraces: Attach
 SpacesBeforeTrailingComments: 1
 MaxEmptyLinesToKeep: 1
-SortIncludes: true 
+
+# Configure include sorting (Google Style)
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 1. Related header (handled automatically for .cpp files)
+  # 2. C system headers
+  - Regex: "^<[a-z_]+\\.h>$"
+    Priority: 2
+  # 3. C++ standard library headers
+  - Regex: "^<[a-zA-Z_][a-zA-Z_0-9]*>$"
+    Priority: 3
+  # 4. Other libraries' headers (third-party)
+  - Regex: "^<.*>$"
+    Priority: 4
+  # 5. Project's headers
+  - Regex: "^\".*\"$"
+    Priority: 5
+IncludeIsMainRegex: "([-_](test|unittest))?$"

@@ -7,10 +7,11 @@
  * for calculator operations with exception handling.
  */
 
-#include <ab/calculator/Calculator.h>
+#include <stdexcept>
+
 #include <nanobind/nanobind.h>
 
-#include <stdexcept>
+#include "ab/calculator/Calculator.h"
 
 namespace nb = nanobind;
 using namespace nb::literals;

@@ -1,5 +1,6 @@
-#include <ab/notifier/Notifier.h>
 #include <gtest/gtest.h>
+
+#include "ab/notifier/Notifier.h"
 
 TEST(NotifierTest, CheckNotifications) {
   ab::notifier::Notifier notifier(10);
