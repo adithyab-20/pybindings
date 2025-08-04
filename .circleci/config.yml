@@ -3,7 +3,7 @@ version: 2.1
 executors:
   cpp-python-executor:
     machine:
-      image: ubuntu-2204:current
+      image: ubuntu-2004:current
     working_directory: ~/pybindings
 
 jobs:
@@ -14,17 +14,21 @@ jobs:
 
       - restore_cache:
           keys:
-            - vcpkg-v3-{{ checksum "vcpkg.json" }}-{{ arch }}
-            - vcpkg-v3-{{ checksum "vcpkg.json" }}
-            - vcpkg-v3-
+            - vcpkg-v6-{{ checksum "vcpkg.json" }}-{{ arch }}
+            - vcpkg-v6-{{ checksum "vcpkg.json" }}
+            - vcpkg-v6-
 
       - run:
           name: Install System Dependencies
           command: |
             sudo apt-get update
+            # Add deadsnakes PPA for Python 3.12
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository ppa:deadsnakes/ppa -y
+            sudo apt-get update
             DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
-              cmake clang clang-tidy ninja-build pkg-config llvm \
-              python3 python3-dev python3-venv \
+              cmake clang clang-tidy clang-format ninja-build pkg-config llvm \
+              python3.12 python3.12-dev python3.12-venv python3.12-distutils \
               autoconf automake libtool
 
       - run:
@@ -43,10 +47,10 @@ jobs:
           command: ./vcpkg/bootstrap-vcpkg.sh
 
       - run:
-          name: Install vcpkg Dependencies
+          name: Install vcpkg Dependencies  
           command: |
-            export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
-            ./vcpkg/vcpkg install --triplet=x64-linux
+            # Use vcpkg's official pre-built binaries (much faster!)
+            ./vcpkg/vcpkg install --triplet=x64-linux --binarysource=default
 
       - run:
           name: Configure C++ Project
@@ -59,10 +63,28 @@ jobs:
               -G Ninja
 
       - run:
+          name: Code Formatting Check
+          command: |
+            echo "Checking code formatting with clang-format..."
+            find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | \
+            grep -E '^\./(src|main\.cpp)' | \
+            xargs clang-format --dry-run -Werror || (echo "Code formatting issues found. Run 'clang-format -i' on the files." && exit 1)
+
+      - run:
           name: Build C++ Project
           command: |
             mkdir -p build/test_results
             cmake --build build
+
+      - run:
+          name: Static Analysis with Clang-Tidy
+          command: |
+            echo "Running clang-tidy static analysis..."
+            find src -name '*.cpp' -o -name '*.hpp' | \
+            xargs clang-tidy -p build \
+            --header-filter='src/.*' \
+            --warnings-as-errors='-*,performance-*,bugprone-*' \
+            || echo "Clang-tidy found issues but continuing..."
 
       - run:
           name: Run C++ Tests
@@ -75,22 +97,22 @@ jobs:
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv pip install -e ".[dev]"
+            uv pip install -e ".[dev]" --python python3.12
 
       - run:
           name: Run Python Tests
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv run pytest tests/ -v --junitxml=../build/test_results/pytest.xml
+            uv run --python python3.12 pytest tests/ -v --junitxml=../build/test_results/pytest.xml
 
       - run:
           name: Python Code Quality
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv run ruff check .
-            uv run mypy .
+            uv run --python python3.12 ruff check .
+            uv run --python python3.12 mypy .
 
       - store_test_results:
           path: build/test_results
@@ -100,12 +122,9 @@ jobs:
           destination: test-results
 
       - save_cache:
-          key: vcpkg-v3-{{ checksum "vcpkg.json" }}-{{ arch }}
+          key: vcpkg-v6-{{ checksum "vcpkg.json" }}-{{ arch }}
           paths:
-            - ~/.cache/vcpkg/archives
             - ./vcpkg/installed
-            - ./vcpkg/buildtrees
-            - ./vcpkg/packages
 
 workflows:
   version: 2
