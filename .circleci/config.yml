@@ -14,9 +14,9 @@ jobs:
 
       - restore_cache:
           keys:
-            - vcpkg-v6-{{ checksum "vcpkg.json" }}-{{ arch }}
-            - vcpkg-v6-{{ checksum "vcpkg.json" }}
-            - vcpkg-v6-
+            - vcpkg-v7-{{ checksum "vcpkg.json" }}-{{ arch }}
+            - vcpkg-v7-{{ checksum "vcpkg.json" }}
+            - vcpkg-v7-
 
       - run:
           name: Install System Dependencies
@@ -29,7 +29,7 @@ jobs:
             DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
               cmake clang clang-tidy clang-format ninja-build pkg-config llvm \
               python3.12 python3.12-dev python3.12-venv \
-              autoconf automake libtool curl
+              autoconf automake libtool curl build-essential
 
       - run:
           name: Install uv
@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Install vcpkg Dependencies  
           command: |
-            # Use vcpkg's official pre-built binaries (much faster!)
+            # Install only C++ dependencies (gtest, nanobind)
             ./vcpkg/vcpkg install --triplet=x64-linux --binarysource=default
 
       - run:
@@ -74,7 +74,7 @@ jobs:
           name: Build C++ Project
           command: |
             mkdir -p build/test_results
-            cmake --build build
+            ninja -C build
 
       - run:
           name: Static Analysis with Clang-Tidy
@@ -97,22 +97,22 @@ jobs:
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv pip install -e ".[dev]" --python python3.12
+            uv sync --extra dev
 
       - run:
           name: Run Python Tests
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv run --python python3.12 pytest tests/ -v --junitxml=../build/test_results/pytest.xml
+            uv run pytest tests/ -v --junitxml=../build/test_results/pytest.xml
 
       - run:
           name: Python Code Quality
           command: |
             source $HOME/.cargo/env
             cd ab_py_calculator
-            uv run --python python3.12 ruff check .
-            uv run --python python3.12 mypy .
+            uv run ruff check .
+            uv run mypy .
 
       - store_test_results:
           path: build/test_results
@@ -122,7 +122,7 @@ jobs:
           destination: test-results
 
       - save_cache:
-          key: vcpkg-v6-{{ checksum "vcpkg.json" }}-{{ arch }}
+          key: vcpkg-v7-{{ checksum "vcpkg.json" }}-{{ arch }}
           paths:
             - ./vcpkg/installed
 
