@@ -12,18 +12,17 @@
  */
 
 #include <iostream>
-#include <stdexcept>
 
 #include "ab/calculator/Calculator.h"
 #include "ab/logger/Logger.h"
 #include "ab/notifier/Notifier.h"
 
 int main() {
-  std::cout << "=== AB Modules Demo ===" << std::endl;
+  std::cout << "=== AB Modules Demo ===\n";
 
   try {
     // Initialize components
-    ab::calculator::Calculator calc;
+    const ab::calculator::Calculator calc;
     ab::logger::Logger logger;
     constexpr int notification_threshold = 100;
     ab::notifier::Notifier notifier(
@@ -35,40 +34,40 @@ int main() {
     constexpr int first_number = 15;
     constexpr int second_number = 8;
     std::cout << "Computing: " << first_number << " + " << second_number
-              << std::endl;
+              << '\n';
     int result = calc.add(first_number, second_number);
     logger.log("Addition completed");
-    std::cout << "Result: " << result << std::endl;
+    std::cout << "Result: " << result << '\n';
 
     // Check for notifications
     notifier.checkAndNotify(result);
     if (notifier.wasNotified()) {
-      std::cout << "Notification: Result exceeded threshold!" << std::endl;
+      std::cout << "Notification: Result exceeded threshold!\n";
     }
 
     // Demonstrate multiplication
     std::cout << "\nComputing: " << first_number << " * " << second_number
-              << std::endl;
+              << '\n';
     result = calc.multiply(first_number, second_number);
     logger.log("Multiplication completed");
-    std::cout << "Result: " << result << std::endl;
+    std::cout << "Result: " << result << '\n';
 
     notifier.checkAndNotify(result);
     if (notifier.wasNotified()) {
-      std::cout << "Notification: Result exceeded threshold!" << std::endl;
+      std::cout << "Notification: Result exceeded threshold!\n";
     }
 
     // Display all logs
-    std::cout << "\n=== Operation Log ===" << std::endl;
+    std::cout << "\n=== Operation Log ===\n";
     const auto &logs = logger.getLogs();
     for (const auto &log : logs) {
-      std::cout << "- " << log << std::endl;
+      std::cout << "- " << log << '\n';
     }
 
-    std::cout << "\n=== Demo Complete ===" << std::endl;
+    std::cout << "\n=== Demo Complete ===\n";
 
   } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
 

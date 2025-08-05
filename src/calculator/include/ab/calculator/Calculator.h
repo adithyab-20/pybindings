@@ -24,6 +24,26 @@ class Calculator {
   ~Calculator();
 
   /**
+   * @brief Copy constructor.
+   */
+  Calculator(const Calculator& other);
+
+  /**
+   * @brief Copy assignment operator.
+   */
+  Calculator& operator=(const Calculator& other);
+
+  /**
+   * @brief Move constructor.
+   */
+  Calculator(Calculator&& other) noexcept;
+
+  /**
+   * @brief Move assignment operator.
+   */
+  Calculator& operator=(Calculator&& other) noexcept;
+
+  /**
    * @brief Adds two integers.
    * @param lhs The first operand.
    * @param rhs The second operand.

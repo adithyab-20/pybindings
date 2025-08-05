@@ -36,6 +36,24 @@ Calculator::Calculator() : pimpl_(std::make_unique<Impl>()) {}
 // Destructor
 Calculator::~Calculator() = default;
 
+// Copy constructor
+Calculator::Calculator([[maybe_unused]] const Calculator& other)
+    : pimpl_(std::make_unique<Impl>()) {}
+
+// Copy assignment operator
+Calculator& Calculator::operator=([[maybe_unused]] const Calculator& other) {
+  if (this != &other) {
+    pimpl_ = std::make_unique<Impl>();
+  }
+  return *this;
+}
+
+// Move constructor
+Calculator::Calculator(Calculator&& other) noexcept = default;
+
+// Move assignment operator
+Calculator& Calculator::operator=(Calculator&& other) noexcept = default;
+
 // Public interface methods - delegate to implementation
 int Calculator::add(int lhs, int rhs) const { return Impl::add(lhs, rhs); }
 
